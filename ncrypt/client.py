@@ -80,3 +80,5 @@ class NcryptClient:
 # TODO: Make postprocessor
 # TODO: Make second preprocessor
 # TODO: Make CLI
+# TODO: Update the README
+# TODO: Publish to PyPy
