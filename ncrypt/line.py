@@ -24,7 +24,7 @@ class Line(TextRegion):
         self.height = y_bottom - y_top
         self.page = page
         self.attr = page_attr
-        self.bboxes = self.__vertical_merge(bounding_boxes)
+        self.bboxes = bounding_boxes if len(bounding_boxes) == 1 else self.__vertical_merge(bounding_boxes)
         self.text = ""
 
     @property

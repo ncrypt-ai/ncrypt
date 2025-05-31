@@ -11,13 +11,12 @@ from ncrypt.utils import Cv2Image
 
 
 class PDFFile:
-    def __init__(self, pages: list[Cv2Image], out_dir: str) -> None:
+    def __init__(self, pages: list[Cv2Image]) -> None:
         """
         Initializes the PDFFile instance.
 
         :param pages: A list of numpy ndarrays, corresponding to each of the pages of the PDF.
         """
-        self.out_dir = out_dir
         self.pages: List[Cv2Image] = pages
         self.transformations: Dict[str, List[Cv2Image]] = {}
         self.text_regions: List[List[Line]] = []
@@ -88,7 +87,7 @@ class PDFFile:
         :param transformation: Name of the transformation that was applied.
         :return: None
         """
-        if not self.transformations[transformation]:
+        if not transformation in self.transformations:
             self.transformations[transformation] = [img]
 
         else:
@@ -143,7 +142,7 @@ class PDFFile:
 
         return self.transformations[idx]
 
-    def save(self, filename: str) -> None:
+    def save(self, filename: str, out_dir: str) -> None:
         """
         Save multiple numpy arrays as a multi-page PDF file.
 
@@ -173,14 +172,14 @@ class PDFFile:
             img_pdf = fitz.open("png", img_buffer.read())
             doc.insert_pdf(img_pdf)
 
-        doc.save(os.path.join(self.out_dir, filename))
+        doc.save(os.path.join(out_dir, filename))
         doc.close()
 
-    def serialize(self, filename: str) -> None:
+    def serialize(self, filename: str, out_dir: str) -> None:
         """
         Serialize the PDFFile object.
 
         :param filename: The path to serialize the pdf at.
         """
-        with open(os.path.join(self.out_dir, filename), "wb") as file:
+        with open(os.path.join(out_dir, filename), "wb") as file:
             pickle.dump(self, file)
