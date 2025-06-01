@@ -1,13 +1,13 @@
 import io
 import os
 import pickle
-from typing import Dict, Union, List
 
 import fitz
 from PIL import Image
 
-from .line import Line
 from ncrypt.utils import Cv2Image
+
+from .line import Line
 
 
 class PDFFile:
@@ -17,12 +17,12 @@ class PDFFile:
 
         :param pages: A list of numpy ndarrays, corresponding to each of the pages of the PDF.
         """
-        self.pages: List[Cv2Image] = pages
-        self.transformations: Dict[str, List[Cv2Image]] = {}
-        self.text_regions: List[List[Line]] = []
+        self.pages: list[Cv2Image] = pages
+        self.transformations: dict[str, list[Cv2Image]] = {}
+        self.text_regions: list[list[Line]] = []
 
-        self.page_ids: List[str] = []
-        self.job_ids: List[List[str]] = []
+        self.page_ids: list[str] = []
+        self.job_ids: list[list[str]] = []
 
     @property
     def preprocessed(self) -> bool:
@@ -49,7 +49,7 @@ class PDFFile:
         """
         return len(self.pages)
 
-    def get_page_ids(self, idx: int | None = None) -> Union[Dict[str, Union[List[str], List[List[str]]]], None]:
+    def get_page_ids(self, idx: int | None = None) -> dict[str, list[str] | list[list[str]]] | None:
         """
         Fetches the page and job IDs at the given index if one is specified, else all IDs.
 
@@ -87,7 +87,7 @@ class PDFFile:
         :param transformation: Name of the transformation that was applied.
         :return: None
         """
-        if not transformation in self.transformations:
+        if transformation not in self.transformations:
             self.transformations[transformation] = [img]
 
         else:
@@ -140,13 +140,14 @@ class PDFFile:
         if transformation not in self.transformations:
             raise KeyError("No such transformation exists.")
 
-        return self.transformations[idx]
+        return self.transformations[transformation][idx]
 
     def save(self, filename: str, out_dir: str) -> None:
         """
         Save multiple numpy arrays as a multi-page PDF file.
 
-        :param filename: The path to save the pdf at.
+        :param filename: The name to save the pdf as.
+        :param out_dir: The path to save the pdf at.
         """
         if len(filename) < 4 or filename[-4:] != ".pdf":
             raise ValueError("The filename must end with '.pdf'.")
@@ -179,7 +180,8 @@ class PDFFile:
         """
         Serialize the PDFFile object.
 
-        :param filename: The path to serialize the pdf at.
+        :param filename: The name to save the pdf as.
+        :param out_dir: The path to save the pdf at.
         """
         with open(os.path.join(out_dir, filename), "wb") as file:
             pickle.dump(self, file)

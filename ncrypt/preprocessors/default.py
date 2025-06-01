@@ -1,5 +1,4 @@
 import math
-from typing import Union, Tuple, List
 
 import cv2
 import fitz
@@ -17,7 +16,7 @@ class DefaultPreprocessor(PreProcessor):
         """
         self.dpi = dpi
 
-    def load_pdf(self, file_path: str) -> Union[PDFFile, None]:
+    def load_pdf(self, file_path: str) -> PDFFile | None:
         pdf = fitz.open(file_path)
         pages = []
 
@@ -40,12 +39,13 @@ class DefaultPreprocessor(PreProcessor):
 
         return None if not pages else PDFFile(pages)
 
-    def process(self, file: PDFFile) -> Tuple[PDFFile, List[List[Line]]]:
+    def process(self, file: PDFFile) -> tuple[PDFFile, list[list[Line]]]:
         text_regions = []
 
         for idx in range(file.num_pages):
             page = file.get_page(idx)
             greyscale = cv2.cvtColor(page, cv2.COLOR_BGR2GRAY)
+
             brightened = self.__enhance_contrast(greyscale)
             blurred = cv2.medianBlur(brightened, 5)
 
@@ -64,7 +64,7 @@ class DefaultPreprocessor(PreProcessor):
                 dynamic_denoised,
                 255,
                 cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                cv2.THRESH_BINARY_INV,
+                cv2.THRESH_BINARY,
                 blockSize=61,
                 C=10,
             )
@@ -80,6 +80,7 @@ class DefaultPreprocessor(PreProcessor):
 
             binary_mask = cv2.bitwise_and(thresh_1, thresh_2)
             binarized = cv2.bitwise_and(binary_mask, thresh_3)
+
             inverted = 255 - binarized
             background_mask, text_mask = self.__find_text_regions(binarized)
 
@@ -92,6 +93,7 @@ class DefaultPreprocessor(PreProcessor):
                 cv2.bitwise_and(binarized, text_mask), background_mask, gaps, idx
             )
             text_regions.append(lines)
+            file.text_regions.append(lines)
 
         return file, text_regions
 
@@ -168,7 +170,7 @@ class DefaultPreprocessor(PreProcessor):
         height_thresh: float = 3.5,
         overlap_thresh: float = 0.4,
         hi: int = 255,
-    ) -> Tuple[Cv2Image, Cv2Image]:
+    ) -> tuple[Cv2Image, Cv2Image]:
         """
         https://users.iit.demokritos.gr/~bgat/IMAVIS_segm.pdf
         """
@@ -291,7 +293,7 @@ class DefaultPreprocessor(PreProcessor):
         return background_mask, text_mask
 
     @staticmethod
-    def __compute_median_gap(components: List[Tuple[float, float, float, float, float]]):
+    def __compute_median_gap(components: list[tuple[float, float, float, float, float]]):
         """
         Assumes that each of the connected components are on the same line and are being read left to right.
         """
@@ -317,7 +319,7 @@ class DefaultPreprocessor(PreProcessor):
         https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/33418.pdf
         https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=3db9a4d4fbc6967b2bc80f47e764f44af39c6867
         """
-        num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(img)
+        num_labels, _, stats, _ = cv2.connectedComponentsWithStats(img)
         dead_space = cv2.bitwise_or(background_mask, gap_mask)
         sorted_labels = sorted(
             range(1, num_labels), key=lambda l: (stats[l, 0], stats[l, 1])
@@ -378,7 +380,7 @@ class DefaultPreprocessor(PreProcessor):
 
             row_idx += 1
 
-        lines: List[Line] = []
+        lines: list[Line] = []
 
         for row in rows:
             running_alpha, y_top, y_bottom, x_left, x_right, label_nums = rows[row]

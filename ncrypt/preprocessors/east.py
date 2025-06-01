@@ -1,4 +1,3 @@
-from typing import Union, Tuple, List
 
 import cv2
 import fitz
@@ -7,7 +6,7 @@ from imutils.object_detection import non_max_suppression
 
 from ncrypt.line import Line
 from ncrypt.pdf import PDFFile
-from ncrypt.utils import Cv2Image, PreProcessor
+from ncrypt.utils import PreProcessor
 
 
 class EastPreprocessor(PreProcessor):
@@ -19,7 +18,7 @@ class EastPreprocessor(PreProcessor):
         self.model_dir = "ncrypt/static/frozen_east_text_detection.pb"
         self.min_confidence = min_confidence
 
-    def load_pdf(self, file_path: str) -> Union[PDFFile, None]:
+    def load_pdf(self, file_path: str) -> PDFFile | None:
         pdf = fitz.open(file_path)
         pages = []
 
@@ -50,7 +49,7 @@ class EastPreprocessor(PreProcessor):
 
         return None if not pages else PDFFile(pages)
 
-    def process(self, file: PDFFile) -> Tuple[PDFFile, List[List[Line]]]:
+    def process(self, file: PDFFile) -> tuple[PDFFile, list[list[Line]]]:
         """
         https://github.com/gifflet/opencv-text-detection/blob/master/text_detection.py
         """
@@ -59,7 +58,7 @@ class EastPreprocessor(PreProcessor):
             "feature_fusion/Conv_7/Sigmoid",
             "feature_fusion/concat_3"
         ]
-        text_regions: List[List[Line]] = []
+        text_regions: list[list[Line]] = []
 
         for idx in range(file.num_pages):
             page = file.get_page(idx)
@@ -109,7 +108,7 @@ class EastPreprocessor(PreProcessor):
 
             # Apply non-maxima suppression to suppress weak, overlapping bounding boxes
             bboxes = non_max_suppression(np.array(rects), probs=confidences)
-            lines: List[Line] = []
+            lines: list[Line] = []
 
             greyscale = cv2.cvtColor(page, cv2.COLOR_RGB2GRAY)
             foreground = np.ones((width, height), dtype=np.uint8) * 255

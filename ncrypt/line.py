@@ -1,6 +1,5 @@
-from typing import List, Tuple, Union
 
-from ncrypt.utils import TextRegion, Cv2Image
+from ncrypt.utils import TextRegion
 
 
 class Line(TextRegion):
@@ -12,8 +11,8 @@ class Line(TextRegion):
         x_left: float,
         x_right: float,
         page: int,
-        page_attr: Union[str, None],
-        bounding_boxes: List[Tuple[float, float, float, float]] = [],
+        page_attr: str | None,
+        bounding_boxes: list[tuple[float, float, float, float]] = [],
     ) -> None:
         self.alpha = alpha
         self.y1 = y_top
@@ -44,7 +43,7 @@ class Line(TextRegion):
         return self.x2
 
     @property
-    def bounding_boxes(self) -> List[Tuple[float, float, float, float]]:
+    def bounding_boxes(self) -> list[tuple[float, float, float, float]]:
         if self.bboxes:
             return self.bboxes
 
@@ -61,7 +60,7 @@ class Line(TextRegion):
     @staticmethod
     def __vertical_merge(
         bounding_boxes
-    ) -> List[Tuple[float, float, float, float]]:
+    ) -> list[tuple[float, float, float, float]]:
         sorted_boxes = sorted(bounding_boxes, key=lambda x: x[0] + x[3] // 2)
         combined = []
 

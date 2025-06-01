@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Tuple, List, Union, Dict, TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from ncrypt.pdf import PDFFile
@@ -13,7 +13,7 @@ class TextRegion(ABC):
 
     @property
     @abstractmethod
-    def page_attr(self) -> Union[str, None]:
+    def page_attr(self) -> str | None:
         pass
 
     @property
@@ -38,7 +38,7 @@ class TextRegion(ABC):
 
     @property
     @abstractmethod
-    def bounding_boxes(self) -> List[Tuple[float, float, float, float]]:
+    def bounding_boxes(self) -> list[tuple[float, float, float, float]]:
         pass
 
     @abstractmethod
@@ -67,20 +67,20 @@ class OCRModel(ABC):
 
     @property
     @abstractmethod
-    def client_specs(self) -> Tuple[Dict[str, str], str]:
+    def client_specs(self) -> tuple[dict[str, str], str]:
         pass
 
     @property
     @abstractmethod
-    def model_specs(self) -> Dict[str, str]:
+    def model_specs(self) -> dict[str, str]:
         pass
 
     @abstractmethod
-    def submit_job(self, file: "PDFFile", text_regions: List[List[TextRegion]], key: str) -> Dict[str, Union[int, List[str], List[List[str]]]]:
+    def submit_job(self, file: "PDFFile", text_regions: list[list[TextRegion]], key: str) -> dict[str, int | list[str] | list[list[str]]]:
         pass
 
     @abstractmethod
-    def get_job_status(self, file: "PDFFile", text_regions: List[List[TextRegion]], key: str) -> Tuple["PDFFile", Dict[str, str]]:
+    def get_job_status(self, file: "PDFFile", text_regions: list[list[TextRegion]], key: str) -> tuple["PDFFile", dict[str, str]]:
         pass
 
 
@@ -90,5 +90,5 @@ class PreProcessor(ABC):
         pass
 
     @abstractmethod
-    def process(self, file: "PDFFile") -> Tuple["PDFFile", List[List[TextRegion]]]:
+    def process(self, file: "PDFFile") -> tuple["PDFFile", list[list[TextRegion]]]:
         pass

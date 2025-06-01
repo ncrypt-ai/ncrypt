@@ -1,11 +1,9 @@
 import os
 from enum import Enum
-from typing import Union, Tuple, List
 
-from ncrypt.utils import BASE_DIR, OCRModel, PreProcessor
-from ncrypt.preprocessors import DefaultPreprocessor
 from ncrypt.models import CRNNv1
-
+from ncrypt.preprocessors import DefaultPreprocessor
+from ncrypt.utils import BASE_DIR, OCRModel, PreProcessor
 
 ARTIFACT_DIR = os.path.join(BASE_DIR, "artifacts")
 OUT_DIR = os.path.join(os.getcwd(), "out")
@@ -35,7 +33,7 @@ class NcryptClient:
         os.makedirs(artifact_dir, exist_ok=True)
         os.makedirs(out_dir, exist_ok=True)
 
-    def run_job(self, pdf_path: str, save: bool = False, save_path: Union[str, None] = None) -> Union[Tuple[List[str], List[List[str]]], None]:
+    def run_job(self, pdf_path: str, save: bool = False, save_path: str | None = None) -> tuple[list[str], list[list[str]]] | None:
         if save and not save_path:
             raise ValueError("The save_path parameter must be provided in order to save the output of the job.")
 
@@ -47,8 +45,8 @@ class NcryptClient:
         response = self.model.submit_job(pdf, text_regions, self.api_key)
 
         status: int = response.get("status", 500)
-        page_ids: List[str] = response.get("page_ids", [])
-        job_ids: List[List[str]] = response.get("job_ids", [])
+        page_ids: list[str] = response.get("page_ids", [])
+        job_ids: list[list[str]] = response.get("job_ids", [])
 
         if status != 200:
             raise ConnectionError("Job failed to be processed.")
