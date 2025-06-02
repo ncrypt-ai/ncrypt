@@ -3,6 +3,7 @@ import json
 import os
 import shutil
 from typing import TYPE_CHECKING
+from base64 import b64encode
 
 import cv2
 import httpx
@@ -25,7 +26,7 @@ class CRNNv1(OCRModel):
 
         _, fhe_dir = self.client_specs()
         self.fhe_client = FHEModelClient(path_dir=fhe_dir, key_dir=fhe_dir)
-        # self.fhe_client.generate_private_and_evaluation_keys()
+        self.fhe_client.generate_private_and_evaluation_keys()
 
     @property
     def model_name(self) -> str:
@@ -201,66 +202,64 @@ class CRNNv1(OCRModel):
 
             return {}        
 
-    def submit_job(self, file: "PDFFile", text_regions: list[list[TextRegion]], api_key: str) -> dict[str, int | list[str] | list[list[str]]]:
+    def submit_job(self, file: "PDFFile", text_regions: list[list[TextRegion]]) -> dict[str, int | list[str] | list[list[str]]]:
         page_ids: list[str] = []
         job_ids: list[list[str]] = []
         
-        for page_num in range(file.num_pages):
+        for page_num in tqdm(range(file.num_pages), desc="Job Submission"):
             region: list[Line] = text_regions[page_num]
-            page_jobs: list[list[bytes]] = []
+            page_jobs: list[list[str]] = []
 
             for i in range(len(region)):
-                region_jobs: list[bytes] = []
+                region_jobs: list[str] = []
 
                 for x, y, w, h in self.__get_chunks(region[i]):
                     img: Cv2Image = file.get_transformation(page_num, region[i].page_attr)
                     sub_image: Cv2Image = self.__crop_image(img, x, y, w, h).reshape(1, 1, 16, 100)
 
-                    encrypted: bytes = self.fhe_client.quantize_encrypt_serialize(sub_image)
-                    region_jobs.append(encrypted)
+                    # TODO: encrypted: bytes = self.fhe_client.quantize_encrypt_serialize(sub_image)
+                    # TODO: region_jobs.append(b64encode(encrypted).decode("utf-8"))
+
+                    region_jobs.append(json.dumps(sub_image.tolist()))
 
                 page_jobs.append(region_jobs)
 
-            print("AAAAA")
-            print(self.evaluation_key)
-            exit()
             try:
-                response = requests.post(
+                response = httpx.post(
                     f"{self.base_url}/api/v1/detect?model_name={self.model_name}",
                     headers={
                         "Accept": "application/json",
                         "X-API-Key": self.api_key,
                     },
-                    data={
-                        "key": self.evaluation_key,
+                    json={
+                        "key_file": self.evaluation_key,
                         "jobs": page_jobs
-                    }
+                    },
+                    timeout=None
                 )
 
                 if response.status_code == 200:
-                    data = response.json()["body"]
-                    body = json.loads(data)
+                    data = response.json()
 
-                    job_ids.append(body.get("job_ids"))
-                    page_ids.append(body.get("page_id"))
+                    job_ids.append(data.get("job_ids"))
+                    page_ids.append(data.get("page_id"))
 
-            except Exception as e:
+            except Exception as e:  
                 print(e)
-                  
+
                 return {
                     "page_ids": page_ids,
                     "job_ids": job_ids,
                     "status": 500
                 }
 
- 
         return {
             "page_ids": page_ids,
             "job_ids": job_ids,
-            "status": 200
+            "status": 200 if page_ids and job_ids else 500
         }
 
-    def get_job_status(self):
+    def get_job_status(self, file: "PDFFile", text_regions: list[list[TextRegion]]):
         pass
 
     @staticmethod
@@ -306,5 +305,3 @@ class CRNNv1(OCRModel):
                 chunks.append(curr_box)
 
         return chunks
-# MYU3T7f.aygtKKhAkCUKHjG.XjCLuhkXNSbfNFeVICrzMTr6fmzpcGi5h1qGkCCbXstMnCG9ny1WqtHnx6ppbusAfORcHhgzwqs.x93CFOsKS4ixYrC2HRRckCSzuUJeXGhgD4ebKIruWDLRt8olSg--
-# 5f4e0d3d-e2fb-4070-8e2b-e4ec52142e17.txt  

@@ -33,8 +33,8 @@ class NcryptClient:
         os.makedirs(artifact_dir, exist_ok=True)
         os.makedirs(out_dir, exist_ok=True)
 
-    def run_job(self, pdf_path: str, save: bool = False, save_path: str | None = None) -> tuple[list[str], list[list[str]]] | None:
-        if save and not save_path:
+    def run_job(self, pdf_path: str, save: bool = False, save_name: str | None = None) -> tuple[list[str], list[list[str]]] | None:
+        if save and not save_name:
             raise ValueError("The save_path parameter must be provided in order to save the output of the job.")
 
         if not os.path.exists(pdf_path):
@@ -42,7 +42,7 @@ class NcryptClient:
 
         pdf = self.preprocessor.load_pdf(pdf_path)
         pdf, text_regions = self.preprocessor.process(pdf)
-        response = self.model.submit_job(pdf, text_regions, self.api_key)
+        response = self.model.submit_job(pdf, text_regions)
 
         status: int = response.get("status", 500)
         page_ids: list[str] = response.get("page_ids", [])
@@ -56,26 +56,6 @@ class NcryptClient:
                 pdf.add_ids(page_ids[i], job_ids[i])
 
             if save:
-                os.makedirs(save_path, exist_ok=True)
-                pdf.serialize(save_path)
+                pdf.serialize(save_name, self.out_dir)
 
         return page_ids, job_ids
-
-
-
-    # def get_job_status(self, file: PDFFile, text_regions: List[List[TextRegion]], api_key: str) -> Tuple[PDFFile, Dict[str, str]]:
-    #     pass
-
-# Model has the iterator for a given text region and the get_img function
-# Client is responsible for updating the PDF after preprocessing and post-processing is done
-# Client is responsible for retries
-
-# Allow setting the vocabulary in advance, or allow a custom language model
-# Assign a preprocessor and a postprocessor
-# Assign a model. Once assigned, it checks to see whether or not you have its specs saved already otherwise it fetches them
-
-# TODO: Finish client
-# TODO: Make postprocessor
-# TODO: Make CLI
-# TODO: Update the README
-# TODO: Publish to PyPy
