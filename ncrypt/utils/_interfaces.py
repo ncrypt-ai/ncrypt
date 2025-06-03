@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, List, Union
+
+from ncrypt.utils._types import JobResults
 
 if TYPE_CHECKING:
     from ncrypt.pdf import PDFFile
@@ -80,7 +82,7 @@ class OCRModel(ABC):
         pass
 
     @abstractmethod
-    def get_job_status(self, file: "PDFFile", text_regions: list[list[TextRegion]], key: str) -> tuple["PDFFile", dict[str, str]]:
+    def get_job_status(self, page_ids: List[str], job_ids: List[List[str]]) -> JobResults | None:
         pass
 
 
@@ -91,4 +93,22 @@ class PreProcessor(ABC):
 
     @abstractmethod
     def process(self, file: "PDFFile") -> tuple["PDFFile", list[list[TextRegion]]]:
+        pass
+
+class PostProcessor(ABC):
+    @property
+    @abstractmethod
+    def vocab(self):
+        pass
+
+    @abstractmethod
+    def char_to_int(self, char: str) -> int:
+        pass
+
+    @abstractmethod
+    def int_to_char(self, idx: int) -> str:
+        pass
+
+    @abstractmethod
+    def process(self, results: JobResults, file: Union["PDFFile", None] = None, page_ids: List[str] = [], job_ids: List[List[str]] = [], text_regions: List[List[TextRegion]] | None = None) -> tuple["PDFFile", list[list[str]]]:
         pass

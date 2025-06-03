@@ -1,11 +1,13 @@
 import io
 import os
 import pickle
+from typing import Dict, List
 
 import fitz
 from PIL import Image
 
 from ncrypt.utils import Cv2Image
+from ncrypt.utils._interfaces import TextRegion
 
 from .line import Line
 
@@ -19,7 +21,7 @@ class PDFFile:
         """
         self.pages: list[Cv2Image] = pages
         self.transformations: dict[str, list[Cv2Image]] = {}
-        self.text_regions: list[list[Line]] = []
+        self.text_regions: list[list[TextRegion]] = []
 
         self.page_ids: list[str] = []
         self.job_ids: list[list[str]] = []
@@ -30,7 +32,7 @@ class PDFFile:
         Returns whether or not the PDF has been preprocessed.
         """
         for k in self.transformations.keys():
-            if len(self.transformations[k]) != len(self.pages) and len(self.pages) != len(self.lines):
+            if len(self.transformations[k]) != len(self.pages) and len(self.pages) != len(self.text_regions):
                 return False
 
         return True
@@ -48,27 +50,6 @@ class PDFFile:
         Returns the number of pages in the PDF.
         """
         return len(self.pages)
-
-    def get_page_ids(self, idx: int | None = None) -> dict[str, list[str] | list[list[str]]] | None:
-        """
-        Fetches the page and job IDs at the given index if one is specified, else all IDs.
-
-        :param idx: Index of the IDs to fetch. Zero indexed.
-        :return: An object with the keys 'page_ids' and 'job_ids'.
-        """
-        if not self.submitted:
-            raise LookupError("The PDF has not been submitted to the OCR endpoint.")
-
-        if idx and (idx < 0 or idx >= len(self.pages)):
-            raise IndexError("Page index out of range.")
-
-        page_ids = [self.page_ids[idx]] if idx else self.page_ids
-        job_ids = [self.job_ids[idx]] if idx else self.job_ids
-
-        return {
-            "page_ids": page_ids,
-            "job_ids": job_ids
-        }
 
     def add_page(self, img: Cv2Image) -> None:
         """
@@ -92,6 +73,15 @@ class PDFFile:
 
         else:
             self.transformations[transformation].append(img)
+
+    def add_text_regions(self, text_regions: List[TextRegion]) -> None:
+        """
+        Sets each of the text regions that are present in each page.
+
+        :param text_regions: A TextRegion object representing all of the text regions on a page.
+        :return: None
+        """
+        self.text_regions.append(text_regions)
 
     def add_ids(self, page_id: str, job_ids: list[str]) -> None:
         """
@@ -141,6 +131,42 @@ class PDFFile:
             raise KeyError("No such transformation exists.")
 
         return self.transformations[transformation][idx]
+    
+    def get_text_regions(self, idx: int | None = None) -> List[List[TextRegion]]:
+        """
+        Fetches thelist of text regions at the given index if one is specified, else all text_regions.
+
+        :param idx: Index of the IDs to fetch. Zero indexed.
+        :return: A list of lists containing TextRegion objects.
+        """
+        if not self.submitted:
+            raise LookupError("The PDF has not been submitted to the OCR endpoint.")
+
+        if idx and (idx < 0 or idx >= len(self.pages)):
+            raise IndexError("Page index out of range.")
+        
+        return [self.text_regions[idx]] if idx else self.text_regions
+
+    def get_page_ids(self, idx: int | None = None) -> Dict[str, List[str] | List[List[str]]] | None:
+        """
+        Fetches the page and job IDs at the given index if one is specified, else all IDs.
+
+        :param idx: Index of the IDs to fetch. Zero indexed.
+        :return: An object with the keys 'page_ids' and 'job_ids'.
+        """
+        if not self.submitted:
+            raise LookupError("The PDF has not been submitted to the OCR endpoint.")
+
+        if idx and (idx < 0 or idx >= len(self.pages)):
+            raise IndexError("Page index out of range.")
+
+        page_ids = [self.page_ids[idx]] if idx else self.page_ids
+        job_ids = [self.job_ids[idx]] if idx else self.job_ids
+
+        return {
+            "page_ids": page_ids,
+            "job_ids": job_ids
+        }
 
     def save(self, filename: str, out_dir: str) -> None:
         """
