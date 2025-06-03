@@ -2,7 +2,7 @@ import io
 import json
 import os
 import shutil
-from typing import TYPE_CHECKING, Dict, List
+from typing import TYPE_CHECKING, List
 from base64 import b64encode
 
 import cv2
@@ -11,6 +11,7 @@ import requests
 from concrete.ml.deployment import FHEModelClient
 from tqdm import tqdm
 import numpy as np
+import torch
 
 from ncrypt.line import Line
 from ncrypt.utils import BASE_DIR, Cv2Image, OCRModel, TextRegion
@@ -214,7 +215,7 @@ class CRNNv1(OCRModel):
 
             for i in range(len(region)):
                 chunks = self.__get_chunks(region[i])
-                region[i].bounding_boxes = chunks # Override the original bounding boxes with ones found to be more optimal for the model
+                region[i].bboxes = chunks # Override the original bounding boxes with ones found to be more optimal for the model
 
                 for x, y, w, h in self.__get_chunks(region[i]):
                     img: Cv2Image = file.get_transformation(page_num, region[i].page_attr)
@@ -267,7 +268,7 @@ class CRNNv1(OCRModel):
         status = {}
         complete = 0
         processed = 0
-
+ 
         for page_num in range(len(page_ids)):
             page_id: str = page_ids[page_num]
             jobs: List[str] = job_ids[page_num]
@@ -289,19 +290,29 @@ class CRNNv1(OCRModel):
 
                 if response.status_code == 200:
                     data = response.json()
-                    page_status = data.get("status")
-                    vals = []
+                    page_results = data.get("message", [])
+                    vals = {}
 
-                    for obj in page_status:
+                    for i in range(len(page_results)):
+                        obj = page_results[i]
                         completed = obj.get("status", "incopmplete")
                         processed += 1
                         complete += 1 if completed == "complete" else 0
 
-                        vals.append({
+                        arr = json.loads(obj.get("val", "{}")).get("response", [])
+
+                        if arr:
+                            arr = [torch.tensor(sub_arr) for sub_arr in arr]
+                            out = torch.stack(arr, dim=1)
+                            probs = torch.nn.functional.log_softmax(out, dim=2).numpy()
+
+                        else:
+                            probs = None
+
+                        vals[obj.get("job_id")] = {
                             "status": obj.get("status"),
-                            "job_id": obj.get("job_id"),
-                            "output": obj.get("val", {}).get("response")
-                        })
+                            "output": probs
+                        }
 
                     status[page_id] = vals
 
@@ -312,10 +323,9 @@ class CRNNv1(OCRModel):
                     "status": 500
                 }
 
-
         return {
             "num_jobs": processed,
-            "jobs_completed": complete,
+            "num_jobs_completed": complete,
             "status": 200,
             "pages": status
         }
@@ -361,7 +371,5 @@ class CRNNv1(OCRModel):
 
             if i == len(line.bounding_boxes) - 1 and curr_box:
                 chunks.append(curr_box)
-
-        self.bo
 
         return chunks

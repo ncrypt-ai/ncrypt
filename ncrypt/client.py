@@ -79,7 +79,7 @@ class NcryptClient:
                 job_ids: List[List[str]] = all_ids.get("job_ids", [])
 
         # TODO: Only call get_job_status for jobs that have not been returned previously
-        print(job_ids)
+
         response: JobResults = self.model.get_job_status(page_ids, job_ids)
         status: int = response.get("status", 500)
         num_jobs: int = response.get("num_jobs", 0)
@@ -90,7 +90,7 @@ class NcryptClient:
 
         else:
             if num_jobs == num_jobs_completed:
-                pass
+                self.postprocessor.process(response, page_ids=page_ids, job_ids=job_ids, text_regions=text_regions)
 
             print(num_jobs_completed)
             print(num_jobs)

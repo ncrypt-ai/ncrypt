@@ -7,11 +7,10 @@ Cv2Image = UMat | Mat | ndarray[Any | dtype[integer | floating]]
 
 class _Result(TypedDict):
     status: Literal["complete", "incomplete"]
-    job_id: str
     output: str
     
 class JobResults(TypedDict):
     num_jobs: int
     num_completed_jobs: int
     status: int
-    pages: Dict[str, List[_Result]]
+    pages: Dict[str, Dict[str, _Result]]
