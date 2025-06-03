@@ -93,7 +93,6 @@ class DefaultPreprocessor(PreProcessor):
                 cv2.bitwise_and(binarized, text_mask), background_mask, gaps, idx
             )
             text_regions.append(lines)
-            file.text_regions.append(lines)
 
         return file, text_regions
 

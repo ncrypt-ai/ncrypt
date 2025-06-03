@@ -2,7 +2,7 @@ import io
 import json
 import os
 import shutil
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, List
 from base64 import b64encode
 
 import cv2
@@ -14,6 +14,7 @@ import numpy as np
 
 from ncrypt.line import Line
 from ncrypt.utils import BASE_DIR, Cv2Image, OCRModel, TextRegion
+from ncrypt.utils._types import JobResults
 
 if TYPE_CHECKING:
     from ncrypt.pdf import PDFFile
@@ -209,10 +210,11 @@ class CRNNv1(OCRModel):
         
         for page_num in tqdm(range(file.num_pages), desc="Job Submission"):
             region: list[Line] = text_regions[page_num]
-            page_jobs: list[list[str]] = []
+            page_jobs: list[tuple] = []
 
             for i in range(len(region)):
-                region_jobs: list[str] = []
+                chunks = self.__get_chunks(region[i])
+                region[i].bounding_boxes = chunks # Override the original bounding boxes with ones found to be more optimal for the model
 
                 for x, y, w, h in self.__get_chunks(region[i]):
                     img: Cv2Image = file.get_transformation(page_num, region[i].page_attr)
@@ -224,9 +226,7 @@ class CRNNv1(OCRModel):
                     normalized = sub_image * (1 / np.max(sub_image))
                     img = np.reshape(normalized, (1, 1, 16, 100))
 
-                    region_jobs.append(json.dumps(sub_image.tolist()))
-
-                page_jobs.append(region_jobs)
+                    page_jobs.append(json.dumps(sub_image.tolist()))
 
             try:
                 response = httpx.post(
@@ -263,8 +263,62 @@ class CRNNv1(OCRModel):
             "status": 200 if page_ids and job_ids else 500
         }
 
-    def get_job_status(self, file: "PDFFile", text_regions: list[list[TextRegion]]):
-        pass
+    def get_job_status(self, page_ids: List[str], job_ids: List[List[str]]) -> JobResults | None:
+        status = {}
+        complete = 0
+        processed = 0
+
+        for page_num in range(len(page_ids)):
+            page_id: str = page_ids[page_num]
+            jobs: List[str] = job_ids[page_num]
+
+            status[page_id] = []
+
+            try:
+                response = httpx.post(
+                    f"{self.base_url}/api/v1/status",
+                    headers={
+                        "Accept": "application/json",
+                        "X-API-Key": self.api_key,
+                    },
+                    json={
+                        "jobs": jobs
+                    },
+                    timeout=None
+                )
+
+                if response.status_code == 200:
+                    data = response.json()
+                    page_status = data.get("status")
+                    vals = []
+
+                    for obj in page_status:
+                        completed = obj.get("status", "incopmplete")
+                        processed += 1
+                        complete += 1 if completed == "complete" else 0
+
+                        vals.append({
+                            "status": obj.get("status"),
+                            "job_id": obj.get("job_id"),
+                            "output": obj.get("val", {}).get("response")
+                        })
+
+                    status[page_id] = vals
+
+            except Exception as e:  
+                print(e)
+
+                return {
+                    "status": 500
+                }
+
+
+        return {
+            "num_jobs": processed,
+            "jobs_completed": complete,
+            "status": 200,
+            "pages": status
+        }
 
     @staticmethod
     def __crop_image(img: Cv2Image, x: float, y: float, w: float, h: float) -> Cv2Image:
@@ -307,5 +361,7 @@ class CRNNv1(OCRModel):
 
             if i == len(line.bounding_boxes) - 1 and curr_box:
                 chunks.append(curr_box)
+
+        self.bo
 
         return chunks
