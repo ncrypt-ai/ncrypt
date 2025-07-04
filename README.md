@@ -2,8 +2,8 @@
 <hr/>
 
 <p align="center">
-  <a href="https://github.com/ncryptai/ncrypt/releases"><img src="https://img.shields.io/github/v/release/ncryptai/ncrypt?style=flat-square"></a>
-  <a href="https://github.com/ncryptai/ncrypt/blob/main/LICENSE.txt"><img src="https://img.shields.io/badge/License-BSD--3--Clause--Clear-%23ffb243?style=flat-square"></a>
+  <a href="https://github.com/ncrypt-ai/ncrypt/releases"><img src="https://img.shields.io/github/v/release/ncrypt-ai/ncrypt?style=flat-square"></a>
+  <a href="https://github.com/ncrypt-ai/ncrypt/blob/main/LICENSE.txt"><img src="https://img.shields.io/badge/License-BSD--3--Clause--Clear-%23ffb243?style=flat-square"></a>
 </p>
 
 ## About
@@ -235,10 +235,10 @@ We firmly believe that products that claim to preserve privacy should be open-so
 able to verify those claims. We welcome contributions to the codebase as well as bug reports and security audits that 
 will help to ensure ncrypt remains secure.
 
-For issues, questions, or feature requests, please open an issue on the [GitHub repository](https://github.com/ncryptai/ncrypt/issues) or send us an [email](mailto:ncrypt.ai.dev@gmail.com).
+For issues, questions, or feature requests, please open an issue on the [GitHub repository](https://github.com/ncrypt-ai/ncrypt/issues) or send us an [email](mailto:ncrypt.ai.dev@gmail.com).
 
 ---
 
 ## License
 
-This software is distributed under the BSD-3-Clause-Clear license. See the [LICENSE.txt](https://github.com/ncryptai/ncrypt/blob/main/LICENSE.txt) file for details.
+This software is distributed under the BSD-3-Clause-Clear license. See the [LICENSE.txt](https://github.com/ncrypt-ai/ncrypt/blob/main/LICENSE.txt) file for details.
