@@ -1,0 +1,10 @@
+include requirements.txt
+include requirements-dev.txt
+include requirements-docs.txt
+include README.md
+include LICENSE.txt
+include ncrypt/assets/*.zip
+
+global-exclude .DS_Store
+prune ncrypt/circuits
+prune ncrypt/lambdas

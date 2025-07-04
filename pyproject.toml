@@ -1,0 +1,167 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ncrypt"
+version = "1.0.0"
+readme.content-type = "text/markdown"
+readme.file = "README.md"
+license = "BSD-3-Clause"
+license-files = ["LICEN[CS]E.*"]
+requires-python = ">=3.11"
+authors = [
+    {name = "ncrypt", email = "ncrypt.ai.dev@gmail.com" },
+]
+maintainers = [
+    {name = "ncrypt", email = "ncrypt.ai.dev@gmail.com" },
+]
+keywords = [
+    "fhe",
+    "homomorphic",
+    "encryption",
+    "privacy",
+    "security",
+    "cli",
+    "files",
+    "file manager",
+    "storage"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "Natural Language :: English",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Communications :: File Sharing",
+    "Topic :: Database :: Front-Ends",
+    "Topic :: Internet :: File Transfer Protocol (FTP)",
+    "Topic :: Security",
+    "Topic :: System :: Shells",
+    "Topic :: Terminals"
+]
+dependencies = [
+    "beautifulsoup4==4.13.4",
+    "boto3~=1.38.46",
+    "botocore~=1.38.46",
+    "cmd2~=2.5.2",
+    "concrete-python==2.10.0",
+    "concrete==4.18.2",
+    "cryptography~=45.0.4",
+    "einops==0.8.1",
+    "googletrans",
+    "gnureadline==8.2.13",
+    "httpx",
+    "imutils==0.5.4",
+    "keyring==25.6.0",
+    "langdetect",
+    "mmh3",
+    "ndg-httpsclient==0.5.1",
+    "nltk==3.9.1",
+    "numpy==1.26.4",
+    "openai-whisper",
+    "opencv-python==4.11.0.86",
+    "openpyxl==3.1.5",
+    "pillow~=9.4.0",
+    "pydantic",
+    "python-docx",
+    "python-pptx",
+    "PyMuPDF",
+    "sentence-transformers==3.2.0",
+    "torch==2.2.2",
+    "transformers~=4.41.0",
+    "tqdm"
+]
+
+[project.optional-dependencies]
+dev = [
+    "coverage",
+    "dotenv",
+    "mypy",
+    "ruff"
+]
+docs = [
+    "furo",
+    "sphinx",
+    "sphinx_copybutton",
+    "sphinx-remove-toctrees"
+]
+
+[project.urls]
+Homepage = "https://github.com/ncrypt-ai/ncrypt"
+Roadmap = "https://github.com/ncrypt-ai/ncrypt/blob/main/ROADMAP.md"
+Documentation = "https://readthedocs.org"
+
+[project.scripts]
+ncrypt = "ncrypt.cli:main"
+
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: marks tests as slow",
+]
+
+[tool.ruff]
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+
+# Format same as Black.
+line-length = 79
+indent-width = 4
+
+target-version = "py311"
+
+[tool.ruff.lint]
+# Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)  codes by default.
+# Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or
+# McCabe complexity (`C901`) by default.
+select = ["E4", "E7", "E9", "F", "I", "UP"]
+ignore = ["E402"]
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings, spaces for indents
+# and trailing commas.
+quote-style = "preserve"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+docstring-code-format = false
+docstring-code-line-length = "dynamic"
