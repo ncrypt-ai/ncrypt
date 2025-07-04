@@ -63,7 +63,7 @@ You can install `ncrypt` from PyPI using the following commands:
 
 ```commandline
 pip install -U pip wheel setuptools
-pip install ncrypt
+pip install ncryptai
 ```
 
 For developers, you can install `ncrypt` from source using the following commands:
