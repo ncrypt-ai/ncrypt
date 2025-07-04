@@ -4,7 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ncryptai"
-version = "1.0.0"
+description = "Privacy preserving file manager"
+version = "1.0.1"
 readme.content-type = "text/markdown"
 readme.file = "README.md"
 license = "BSD-3-Clause"
