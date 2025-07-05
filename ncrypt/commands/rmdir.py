@@ -76,6 +76,8 @@ def do_rmdir(self, args):
             failed_message: str | None = None
 
             for file_id, virtual_path in result:
+                print("AAA", file_id, virtual_path)
+
                 if self.is_remote:
                     completed, message = delete_file(virtual_path)
 
@@ -98,7 +100,9 @@ def do_rmdir(self, args):
                             failed_message = message
 
                 else:
-                    os.remove(virtual_path[0])
+                    print(virtual_path)
+
+                    os.remove(virtual_path)
 
             if failed:
                 self.pinfo("Failed to delete the following files:\n")

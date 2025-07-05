@@ -63,11 +63,13 @@ def do_rm(self, args):
                 if not completed:
                     raise DeletionError(message)
 
+            cursor.execute("DELETE FROM metadata WHERE id = ?", (file_id,))
+            self.conn.commit()
+
         else:
             os.remove(file_path)
 
         cursor.execute("DELETE FROM filesystem WHERE id = ?", (file_id,))
-        cursor.execute("DELETE FROM metadata WHERE id = ?", (file_id,))
 
         # Recursively update modified_at on all parent directories and the root directory
         now: datetime = datetime.now()
